@@ -40,7 +40,16 @@ class PickupSensor(
         if (event.values[0] == sensorValue) {
             if (Utils.isPickUpSetToWake(context)) {
                 wakeLock.acquire(WAKELOCK_TIMEOUT_MS)
-                powerManager.wakeUpWithProximityCheck(
+                // 2026-09-25 build fix: wakeUpWithProximityCheck() is a
+                // LineageOS-only PowerManager extension that does not
+                // exist in this PixelOS frameworks/base (confirmed via
+                // full git history search - the method was never added
+                // here, not a revision-sync gap). Replaced with the
+                // standard PowerManager.wakeUp() overload of the exact
+                // same signature shape (time, reason, details, displayId) -
+                // functionally equivalent minus the proximity check the
+                // Lineage-only variant performed internally.
+                powerManager.wakeUp(
                     SystemClock.uptimeMillis(),
                     PowerManager.WAKE_REASON_GESTURE,
                     TAG,
